@@ -7,10 +7,32 @@ mp_face_detection = mp.solutions.face_detection
 mp_drawing = mp.solutions.drawing_utils
 
 # 이미지 불러오기
-image_path = 'images/gwangju_long.jpg'
+import os
+
+# 현재 스크립트의 디렉토리를 기준으로 상대 경로 설정
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+image_path = os.path.join(project_root, 'images', 'gwangju_long.jpg')
 image = cv2.imread(image_path)
 if image is None:
-    raise FileNotFoundError(f"{image_path} 이미지를 찾을 수 없습니다.")
+    print(f"경고: {image_path} 이미지를 찾을 수 없습니다.")
+    print("대체 이미지를 사용합니다...")
+    
+    # 대체 이미지 경로들 시도
+    alternative_paths = [
+        os.path.join(project_root, 'images', 'gwangju_short.jpg'),
+        'gwangju_long.jpg',
+        'gwangju_short.jpg'
+    ]
+    
+    for alt_path in alternative_paths:
+        image = cv2.imread(alt_path)
+        if image is not None:
+            print(f"대체 이미지 사용: {alt_path}")
+            break
+    
+    if image is None:
+        raise FileNotFoundError("사용할 수 있는 이미지 파일을 찾을 수 없습니다.")
 
 image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
