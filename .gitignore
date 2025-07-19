@@ -44,3 +44,71 @@ Thumbs.db
 # Local configuration
 .env
 .env.local
+
+# AI Models and Large Files
+HairFastGAN/
+huggingface_hairfastgan/
+temp_hairfastgan/
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.h5
+*.hdf5
+*.onnx
+*.pb
+*.tflite
+*.tfl
+*.mlmodel
+
+# Model Checkpoints and Weights
+checkpoints/
+weights/
+models/
+pretrained/
+*.pkl
+*.joblib
+
+# Large Image Datasets (but keep important results)
+images/original/
+images/only_hair/
+images/advanced_hair_masks/
+images/final_results_v3/
+
+# Temporary and Cache Files
+temp/
+tmp/
+cache/
+.cache/
+*.tmp
+*.temp
+
+# Jupyter Notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# Data Files
+*.csv
+*.json
+*.xml
+*.yaml
+*.yml
+*.txt
+*.md
+
+# Compression Files
+*.zip
+*.tar
+*.gz
+*.rar
+*.7z
+
+# Backup Files
+*.bak
+*.backup
+*~
+
+# System Files
+.DS_Store
+Thumbs.db
+desktop.ini
