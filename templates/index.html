@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 헤어스타일 전송 서비스</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .upload-box {
+            border: 3px dashed #ddd;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-box:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .upload-box.dragover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .examples-section {
+            margin-bottom: 40px;
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .example-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .example-image:hover {
+            transform: scale(1.05);
+        }
+
+        .transfer-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .transfer-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .transfer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .transfer-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .result-section {
+            text-align: center;
+            display: none;
+        }
+
+        .result-image {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .download-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .prompt-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .prompt-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .prompt-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .status-bar {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .status-item {
+            display: inline-block;
+            margin: 0 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .status-item.active {
+            color: #667eea;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💇‍♀️ AI 헤어스타일 전송</h1>
+            <p>원본 이미지에 원하는 헤어스타일을 자연스럽게 합성해보세요</p>
+        </div>
+
+        <div class="main-content">
+            <div class="status-bar">
+                <div class="status-item" id="gpu-status">GPU: 확인 중...</div>
+                <div class="status-item" id="model-status">모델: 로드 중...</div>
+                <div class="status-item" id="server-status">서버: 연결 중...</div>
+            </div>
+
+            <div class="upload-section">
+                <div class="upload-box" id="source-upload">
+                    <div class="upload-icon">📷</div>
+                    <div class="upload-text">원본 이미지 업로드</div>
+                    <input type="file" class="file-input" id="source-input" accept="image/*">
+                    <img class="preview-image" id="source-preview">
+                </div>
+
+                <div class="upload-box" id="reference-upload">
+                    <div class="upload-icon">💇‍♀️</div>
+                    <div class="upload-text">참조 헤어스타일 이미지 업로드</div>
+                    <input type="file" class="file-input" id="reference-input" accept="image/*">
+                    <img class="preview-image" id="reference-preview">
+                </div>
+            </div>
+
+            <div class="examples-section">
+                <h3>예시 이미지</h3>
+                <div class="examples-grid" id="examples-grid">
+                    <!-- 예시 이미지들이 여기에 로드됩니다 -->
+                </div>
+            </div>
+
+            <div class="prompt-section">
+                <h3>프롬프트 설정 (선택사항)</h3>
+                <input type="text" class="prompt-input" id="positive-prompt" 
+                       placeholder="긍정 프롬프트 (예: natural hair, seamless blending, high quality)" 
+                       value="natural hair, seamless blending with face, high quality, detailed hairstyle">
+                <input type="text" class="prompt-input" id="negative-prompt" 
+                       placeholder="부정 프롬프트 (예: blurry, low quality, unnatural)" 
+                       value="blurry, low quality, distorted, unnatural, obvious seam, bald, no hair, text, watermark, symbols, characters, artifacts">
+            </div>
+
+            <div class="transfer-section">
+                <button class="transfer-btn" id="transfer-btn" disabled>헤어스타일 전송 시작</button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>헤어스타일 전송 중... 잠시만 기다려주세요.</p>
+            </div>
+
+            <div class="error" id="error"></div>
+            <div class="success" id="success"></div>
+
+            <div class="result-section" id="result-section">
+                <h3>전송 결과</h3>
+                <img class="result-image" id="result-image">
+                <button class="download-btn" id="download-btn">결과 이미지 다운로드</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let sourceImage = null;
+        let referenceImage = null;
+        let resultImage = null;
+
+        // DOM 요소들
+        const sourceUpload = document.getElementById('source-upload');
+        const referenceUpload = document.getElementById('reference-upload');
+        const sourceInput = document.getElementById('source-input');
+        const referenceInput = document.getElementById('reference-input');
+        const sourcePreview = document.getElementById('source-preview');
+        const referencePreview = document.getElementById('reference-preview');
+        const transferBtn = document.getElementById('transfer-btn');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const success = document.getElementById('success');
+        const resultSection = document.getElementById('result-section');
+        const resultImage = document.getElementById('result-image');
+        const downloadBtn = document.getElementById('download-btn');
+        const examplesGrid = document.getElementById('examples-grid');
+
+        // 서버 상태 확인
+        async function checkServerStatus() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                document.getElementById('gpu-status').textContent = `GPU: ${data.gpu_available ? '사용 가능' : '사용 불가'}`;
+                document.getElementById('model-status').textContent = `모델: ${data.model_loaded ? '로드됨' : '로드 실패'}`;
+                document.getElementById('server-status').textContent = '서버: 연결됨';
+                
+                if (data.model_loaded) {
+                    document.getElementById('model-status').classList.add('active');
+                }
+            } catch (err) {
+                document.getElementById('server-status').textContent = '서버: 연결 실패';
+                showError('서버에 연결할 수 없습니다.');
+            }
+        }
+
+        // 예시 이미지 로드
+        async function loadExamples() {
+            try {
+                const response = await fetch('/examples');
+                const data = await response.json();
+                
+                examplesGrid.innerHTML = '';
+                data.examples.forEach(example => {
+                    const img = document.createElement('img');
+                    img.src = `/images/original/${example.filename}`;
+                    img.alt = example.filename;
+                    img.className = 'example-image';
+                    img.onclick = () => {
+                        // 예시 이미지를 참조 이미지로 설정
+                        referenceImage = example.filename;
+                        referencePreview.src = img.src;
+                        referencePreview.style.display = 'block';
+                        updateTransferButton();
+                    };
+                    examplesGrid.appendChild(img);
+                });
+            } catch (err) {
+                console.error('예시 이미지 로드 실패:', err);
+            }
+        }
+
+        // 파일 업로드 처리
+        function setupFileUpload(uploadBox, fileInput, preview, type) {
+            uploadBox.addEventListener('click', () => fileInput.click());
+            
+            uploadBox.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadBox.classList.add('dragover');
+            });
+            
+            uploadBox.addEventListener('dragleave', () => {
+                uploadBox.classList.remove('dragover');
+            });
+            
+            uploadBox.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadBox.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileSelect(files[0], type);
+                }
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileSelect(e.target.files[0], type);
+                }
+            });
+        }
+
+        // 파일 선택 처리
+        async function handleFileSelect(file, type) {
+            if (!file.type.startsWith('image/')) {
+                showError('이미지 파일만 업로드 가능합니다.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('업로드 실패');
+                }
+
+                const data = await response.json();
+                
+                if (type === 'source') {
+                    sourceImage = data.filename;
+                    sourcePreview.src = URL.createObjectURL(file);
+                    sourcePreview.style.display = 'block';
+                } else {
+                    referenceImage = data.filename;
+                    referencePreview.src = URL.createObjectURL(file);
+                    referencePreview.style.display = 'block';
+                }
+
+                updateTransferButton();
+                hideError();
+            } catch (err) {
+                showError('이미지 업로드에 실패했습니다.');
+            }
+        }
+
+        // 전송 버튼 상태 업데이트
+        function updateTransferButton() {
+            transferBtn.disabled = !(sourceImage && referenceImage);
+        }
+
+        // 헤어스타일 전송
+        async function transferHairStyle() {
+            if (!sourceImage || !referenceImage) {
+                showError('원본 이미지와 참조 이미지를 모두 업로드해주세요.');
+                return;
+            }
+
+            const positivePrompt = document.getElementById('positive-prompt').value;
+            const negativePrompt = document.getElementById('negative-prompt').value;
+
+            loading.style.display = 'block';
+            transferBtn.disabled = true;
+            hideError();
+            hideSuccess();
+
+            try {
+                const response = await fetch('/transfer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        source_image: sourceImage,
+                        reference_image: referenceImage,
+                        prompt: positivePrompt,
+                        negative_prompt: negativePrompt
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || '전송 실패');
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultImage.src = `/download/${data.output_filename}`;
+                    resultSection.style.display = 'block';
+                    showSuccess('헤어스타일 전송이 완료되었습니다!');
+                    
+                    // 다운로드 버튼 설정
+                    downloadBtn.onclick = () => {
+                        window.open(`/download/${data.output_filename}`, '_blank');
+                    };
+                } else {
+                    throw new Error('전송에 실패했습니다.');
+                }
+            } catch (err) {
+                showError(`헤어스타일 전송 실패: ${err.message}`);
+            } finally {
+                loading.style.display = 'none';
+                transferBtn.disabled = false;
+            }
+        }
+
+        // 유틸리티 함수들
+        function showError(message) {
+            error.textContent = message;
+            error.style.display = 'block';
+        }
+
+        function hideError() {
+            error.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            success.textContent = message;
+            success.style.display = 'block';
+        }
+
+        function hideSuccess() {
+            success.style.display = 'none';
+        }
+
+        // 이벤트 리스너 설정
+        transferBtn.addEventListener('click', transferHairStyle);
+        setupFileUpload(sourceUpload, sourceInput, sourcePreview, 'source');
+        setupFileUpload(referenceUpload, referenceInput, referencePreview, 'reference');
+
+        // 초기화
+        checkServerStatus();
+        loadExamples();
+        
+        // 주기적으로 서버 상태 확인
+        setInterval(checkServerStatus, 30000);
+    </script>
+</body>
+</html>
