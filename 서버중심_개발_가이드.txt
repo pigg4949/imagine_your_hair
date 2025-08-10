@@ -1,0 +1,304 @@
+🖥️ GPU 없는 노트북을 위한 서버 중심 개발 가이드
+================================================
+
+📋 개발 환경 구성
+-----------------
+- **로컬**: GPU 없는 노트북 (코드 편집, Git 관리)
+- **서버**: GCP GPU 인스턴스 (실행, 테스트, 배포)
+- **동기화**: Git + 자동화 스크립트
+
+🚀 최적화된 워크플로우
+---------------------
+
+### 1단계: 서버 중심 개발 환경 설정
+
+**로컬에서:**
+```bash
+# 1. 로컬에서 코드 편집 (GPU 불필요)
+# 2. Git으로 버전 관리
+git add .
+git commit -m "로컬에서 코드 수정"
+git push origin dev
+```
+
+**서버에서:**
+```bash
+# 1. 서버에서 최신 코드 가져오기
+git pull origin dev
+
+# 2. GPU 환경에서 테스트 및 실행
+python app.py
+
+# 3. 결과 확인 및 로그 분석
+# 4. 필요시 코드 수정 후 커밋
+git add .
+git commit -m "서버에서 테스트 완료"
+git push origin dev
+```
+
+### 2단계: 자동화된 개발 사이클
+
+**로컬 → 서버 자동 배포:**
+```bash
+# 로컬에서 코드 수정 후
+git push origin dev
+
+# 서버에서 자동으로 최신 코드 가져와서 실행
+# (cron job 또는 systemd service로 설정)
+```
+
+**서버 → 로컬 결과 동기화:**
+```bash
+# 로컬에서 결과물만 가져오기
+git pull origin dev
+# 또는
+.\sync_from_gcp.ps1 -ServerIP "server-ip" -Username "username" -SyncType "outputs"
+```
+
+🛠️ 서버 중심 개발 도구 설정
+---------------------------
+
+### 1. 서버에서 개발 환경 최적화
+
+**VS Code Remote Development 설정:**
+```bash
+# 서버에서 SSH 서비스 확인
+sudo systemctl status ssh
+
+# 로컬 VS Code에서:
+# 1. Remote-SSH 확장 설치
+# 2. SSH 연결 설정
+# 3. 서버의 프로젝트 폴더 열기
+```
+
+**서버에서 개발 도구 설치:**
+```bash
+# 서버에 개발 도구 설치
+sudo apt update
+sudo apt install -y vim nano htop tmux screen
+
+# Python 개발 도구
+pip install black flake8 pytest ipython jupyter
+
+# Git 설정
+git config --global user.name "Your Name"
+git config --global user.email "your-email@example.com"
+```
+
+### 2. 자동화 스크립트 설정
+
+**서버에서 자동 배포 스크립트:**
+```bash
+#!/bin/bash
+# auto_deploy.sh
+cd /home/username/HairSwap
+git pull origin dev
+source venv/bin/activate
+python app.py
+```
+
+**로컬에서 원격 실행 스크립트:**
+```powershell
+# remote_execute.ps1
+param(
+    [string]$ServerIP,
+    [string]$Username,
+    [string]$Command
+)
+
+ssh -i ~/.ssh/id_rsa "$Username@$ServerIP" "$Command"
+```
+
+### 3. 실시간 모니터링 설정
+
+**서버에서 로그 모니터링:**
+```bash
+# 실시간 로그 확인
+tail -f app.log
+
+# GPU 사용률 모니터링
+watch -n 1 nvidia-smi
+
+# 시스템 리소스 모니터링
+htop
+```
+
+**로컬에서 원격 모니터링:**
+```powershell
+# 원격 로그 확인
+ssh username@server-ip "tail -f /home/username/HairSwap/app.log"
+
+# 원격 GPU 상태 확인
+ssh username@server-ip "nvidia-smi"
+```
+
+📁 파일 관리 전략
+-----------------
+
+### 1. 코드 파일 관리
+- **로컬**: 소스 코드 편집, Git 관리
+- **서버**: 실행, 테스트, 결과 생성
+- **동기화**: Git push/pull
+
+### 2. 데이터 파일 관리
+- **입력 데이터**: 로컬에서 Git으로 관리
+- **출력 결과**: 서버에서 생성, 필요시 로컬로 동기화
+- **모델 파일**: 서버에 캐시, 로컬에는 .gitignore
+
+### 3. 설정 파일 관리
+- **환경 설정**: 로컬과 서버 동일하게 유지
+- **API 키**: 환경 변수로 관리
+- **로그 설정**: 서버 중심으로 관리
+
+⚡ 고효율 개발 팁
+-----------------
+
+### 1. 코드 편집 최적화
+```bash
+# 로컬에서 빠른 편집
+# - VS Code 사용
+# - 자동 완성 설정
+# - 린터 설정
+
+# 서버에서 빠른 실행
+# - tmux/screen 사용
+# - 백그라운드 실행
+# - 자동 재시작
+```
+
+### 2. 테스트 최적화
+```bash
+# 로컬에서 단위 테스트 (GPU 불필요)
+python -m pytest tests/unit/
+
+# 서버에서 통합 테스트 (GPU 필요)
+python -m pytest tests/integration/
+python test_service.py
+```
+
+### 3. 디버깅 최적화
+```bash
+# 로컬에서 코드 검토
+# - 정적 분석
+# - 코드 리뷰
+# - 문서 작성
+
+# 서버에서 런타임 디버깅
+# - 로그 분석
+# - 성능 프로파일링
+# - 메모리 사용량 확인
+```
+
+🔄 자동화 워크플로우
+-------------------
+
+### 1. 개발 → 배포 자동화
+```bash
+# 로컬에서 코드 수정 후
+git add .
+git commit -m "개발 완료"
+git push origin dev
+
+# 서버에서 자동으로 감지하여 재시작
+# (Git hook 또는 cron job 사용)
+```
+
+### 2. 결과 → 분석 자동화
+```bash
+# 서버에서 결과 생성 후
+# 자동으로 로컬에 동기화
+# (스케줄러 사용)
+```
+
+### 3. 모니터링 자동화
+```bash
+# 서버 상태 자동 모니터링
+# - GPU 사용률
+# - 메모리 사용량
+# - 서비스 상태
+# - 오류 알림
+```
+
+📊 성능 최적화
+--------------
+
+### 1. 네트워크 최적화
+```bash
+# SSH 연결 최적화
+# ~/.ssh/config 설정
+Host gcp-server
+    HostName your-server-ip
+    User your-username
+    IdentityFile ~/.ssh/id_rsa
+    Compression yes
+    ServerAliveInterval 60
+```
+
+### 2. 파일 전송 최적화
+```bash
+# 압축 전송 사용
+scp -C -r local_folder username@server-ip:/remote_folder
+
+# rsync 사용 (변경된 파일만)
+rsync -avz --delete local_folder/ username@server-ip:/remote_folder/
+```
+
+### 3. 개발 속도 최적화
+```bash
+# 로컬에서 미리 테스트 (GPU 불필요한 부분)
+# - 문법 검사
+# - 단위 테스트
+# - 코드 스타일 검사
+
+# 서버에서만 GPU 테스트
+# - 모델 실행
+# - 성능 테스트
+# - 통합 테스트
+```
+
+🔧 문제 해결
+-----------
+
+### 1. 네트워크 연결 문제
+```bash
+# 연결 테스트
+ping server-ip
+ssh -v username@server-ip
+
+# 대안: VPN 또는 포트 포워딩
+```
+
+### 2. 파일 동기화 문제
+```bash
+# Git 충돌 해결
+git status
+git diff
+git merge --abort  # 필요시
+
+# 수동 동기화
+scp -r username@server-ip:/path/to/file .
+```
+
+### 3. 서버 리소스 부족
+```bash
+# GPU 메모리 확인
+nvidia-smi
+
+# 시스템 리소스 확인
+htop
+df -h
+
+# 불필요한 프로세스 정리
+pkill -f python
+```
+
+✅ 권장 개발 순서
+-----------------
+1. **로컬에서 코드 작성** (GPU 불필요)
+2. **Git으로 서버에 배포**
+3. **서버에서 GPU 테스트**
+4. **결과 확인 및 분석**
+5. **필요시 코드 수정**
+6. **반복**
+
+이 워크플로우를 통해 GPU가 없는 노트북에서도 효율적으로 AI 모델을 개발하고 배포할 수 있습니다!
